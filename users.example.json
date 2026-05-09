@@ -1,0 +1,11 @@
+{
+  "admin@example.com": {
+    "name": "Admin",
+    "email": "admin@example.com",
+    "mobile": "0000000000",
+    "password": "<sha256_or_other_hash_here>",
+    "is_admin": true,
+    "is_active": true,
+    "created_at": "2026-01-01T00:00:00"
+  }
+}

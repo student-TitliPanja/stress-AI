@@ -1,0 +1,333 @@
+{% extends "base.html" %}
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .zone-bar {
+        height: 10px;
+        border-radius: 5px;
+        transition: width 0.8s ease;
+    }
+
+    .report-rec {
+        padding: 0.7rem 1rem;
+        border-radius: 10px;
+        background: rgba(22, 22, 58, 0.4);
+        border-left: 3px solid var(--accent-purple);
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .report-rec:hover {
+        background: rgba(99, 102, 241, 0.1);
+        transform: translateX(4px);
+    }
+
+    .session-row {
+        transition: all 0.3s ease;
+    }
+
+    .session-row:hover {
+        background: rgba(99, 102, 241, 0.05) !important;
+    }
+
+    .mood-indicator {
+        font-size: 2.5rem;
+        line-height: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-4">
+    <div class="text-center mb-5">
+        <i class="bi bi-graph-up-arrow" style="font-size: 3rem; color: var(--accent-pink);"></i>
+        <h1 class="section-title mt-3"><span class="gradient-text">Analytics Dashboard</span></h1>
+        <p class="section-subtitle mx-auto">Comprehensive V-A analysis, stress trends, and session reports</p>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row g-3 mb-5">
+        <div class="col-6 col-md-2">
+            <div class="glass-card stat-card" id="stat-avg-stress">
+                <div class="stat-value"
+                    style="font-size: 1.8rem; {% if stats.avg_stress > 0.5 %}color: var(--accent-red); -webkit-text-fill-color: var(--accent-red);{% endif %}">
+                    {{ '%.2f' % stats.avg_stress }}
+                </div>
+                <div class="stat-label">Avg Stress</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="glass-card stat-card" id="stat-max-stress">
+                <div class="stat-value" style="font-size: 1.8rem;">{{ '%.2f' % stats.max_stress }}</div>
+                <div class="stat-label">Max Stress</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="glass-card stat-card" id="stat-valence">
+                <div class="stat-value" style="font-size: 1.8rem;">{{ '%.2f' % stats.avg_valence }}</div>
+                <div class="stat-label">Avg Valence</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="glass-card stat-card" id="stat-arousal">
+                <div class="stat-value" style="font-size: 1.8rem;">{{ '%.2f' % stats.avg_arousal }}</div>
+                <div class="stat-label">Avg Arousal</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="glass-card stat-card" id="stat-samples">
+                <div class="stat-value" style="font-size: 1.8rem;">{{ stats.total_samples }}</div>
+                <div class="stat-label">Samples</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="glass-card stat-card" id="stat-zone">
+                <div class="stat-value" style="font-size: 1.2rem;">{{ stats.dominant_zone.replace('_', ' ').title() }}
+                </div>
+                <div class="stat-label">Dominant Zone</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Past Sessions History -->
+    {% if stats.mood_report and stats.mood_report.past_sessions %}
+    <div class="glass-card mb-5" id="past-sessions">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0">
+                <i class="bi bi-clock-history" style="color: var(--accent-cyan);"></i>
+                Past Analysis Sessions
+            </h4>
+            <span class="badge" style="background: rgba(34,211,238,0.15); color: var(--accent-cyan);">
+                {{ stats.mood_report.past_sessions|length }} session{{ 's' if stats.mood_report.past_sessions|length > 1
+                else '' }}
+            </span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-borderless align-middle mb-0" style="color: var(--text-primary);">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <th class="text-secondary small text-uppercase" style="letter-spacing: 0.5px;">Date</th>
+                        <th class="text-secondary small text-uppercase" style="letter-spacing: 0.5px;">Duration</th>
+                        <th class="text-secondary small text-uppercase" style="letter-spacing: 0.5px;">Avg Stress</th>
+                        <th class="text-secondary small text-uppercase" style="letter-spacing: 0.5px;">Max Stress</th>
+                        <th class="text-secondary small text-uppercase" style="letter-spacing: 0.5px;">Valence</th>
+                        <th class="text-secondary small text-uppercase" style="letter-spacing: 0.5px;">Arousal</th>
+                        <th class="text-secondary small text-uppercase" style="letter-spacing: 0.5px;">Dominant Mood
+                        </th>
+                        <th class="text-secondary small text-uppercase text-end" style="letter-spacing: 0.5px;">Samples
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in stats.mood_report.past_sessions %}
+                    <tr class="session-row" style="border-bottom: 1px solid rgba(99,102,241,0.05);">
+                        <td>
+                            <span class="fw-semibold"
+                                style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">
+                                {{ s.date }}
+                            </span>
+                        </td>
+                        <td class="text-secondary" style="font-size: 0.9rem;">{{ s.duration }}</td>
+                        <td>
+                            <span
+                                style="font-family: 'JetBrains Mono', monospace; color: {{ 'var(--accent-red)' if s.avg_stress > 0.5 else 'var(--accent-green)' }};">
+                                {{ s.avg_stress }}
+                            </span>
+                        </td>
+                        <td>
+                            <span
+                                style="font-family: 'JetBrains Mono', monospace; color: {{ 'var(--accent-red)' if s.max_stress > 0.7 else 'var(--accent-orange)' if s.max_stress > 0.5 else 'var(--accent-green)' }};">
+                                {{ s.max_stress }}
+                            </span>
+                        </td>
+                        <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">{{ s.avg_valence }}
+                        </td>
+                        <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;">{{ s.avg_arousal }}
+                        </td>
+                        <td>
+                            <span class="badge-zone badge-{{ s.dominant_zone }}" style="font-size: 0.75rem;">
+                                {{ s.dominant_label }}
+                            </span>
+                        </td>
+                        <td class="text-end text-secondary" style="font-size: 0.9rem;">{{ s.samples }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Row 1: V-A Scatter + Zone Pie -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-7">
+            <div class="glass-card" id="plot-va-scatter">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-bullseye" style="color: var(--accent-pink);"></i>
+                    Valence-Arousal Scatter Plot
+                </h5>
+                <img src="data:image/png;base64,{{ plots.va_scatter }}" class="img-fluid rounded-3"
+                    alt="V-A scatter plot" style="width: 100%;">
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="glass-card" id="plot-zone-dist">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-pie-chart" style="color: var(--accent-green);"></i>
+                    Zone Distribution
+                </h5>
+                <img src="data:image/png;base64,{{ plots.zone_distribution }}" class="img-fluid rounded-3"
+                    alt="Zone distribution" style="width: 100%;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Stress Timeline -->
+    <div class="glass-card mb-4" id="plot-stress-timeline">
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-graph-down" style="color: var(--accent-red);"></i>
+            Stress Score Timeline
+        </h5>
+        <img src="data:image/png;base64,{{ plots.stress_timeline }}" class="img-fluid rounded-3" alt="Stress timeline"
+            style="width: 100%;">
+    </div>
+
+    <!-- Row 3: Rolling Average -->
+    <div class="glass-card mb-4" id="plot-rolling-stress">
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-activity" style="color: var(--accent-purple);"></i>
+            Rolling Average Stress Level
+        </h5>
+        <img src="data:image/png;base64,{{ plots.rolling_stress }}" class="img-fluid rounded-3" alt="Rolling average"
+            style="width: 100%;">
+    </div>
+
+    <!-- Row 4: Daily Stress + V-A Timelines -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-5">
+            <div class="glass-card" id="plot-daily-stress">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-bar-chart" style="color: var(--accent-orange);"></i>
+                    Daily Average Stress
+                </h5>
+                <img src="data:image/png;base64,{{ plots.daily_stress }}" class="img-fluid rounded-3" alt="Daily stress"
+                    style="width: 100%;">
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="glass-card" id="plot-va-timelines">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-graph-up" style="color: var(--accent-blue);"></i>
+                    Valence &amp; Arousal Timelines
+                </h5>
+                <img src="data:image/png;base64,{{ plots.va_timelines }}" class="img-fluid rounded-3"
+                    alt="V-A timelines" style="width: 100%;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 5: Acoustic Trends -->
+    <div class="glass-card mb-4" id="plot-acoustic-trends">
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-soundwave" style="color: var(--accent-cyan);"></i>
+            Acoustic Feature Trends (Pitch, Jitter, Shimmer)
+        </h5>
+        <img src="data:image/png;base64,{{ plots.acoustic_trends }}" class="img-fluid rounded-3" alt="Acoustic trends"
+            style="width: 100%;">
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════ -->
+    <!--  MOOD SUMMARY REPORT                                  -->
+    <!-- ══════════════════════════════════════════════════════ -->
+    {% if stats.mood_report %}
+    <div class="glass-card mb-4" id="mood-report" style="border: 1px solid rgba(139,92,246,0.25);">
+        <div class="d-flex align-items-center mb-4">
+            <i class="bi bi-file-earmark-medical" style="font-size: 1.8rem; color: var(--accent-purple);"></i>
+            <div class="ms-3">
+                <h4 class="fw-bold mb-0">Mood Summary Report</h4>
+                <p class="text-secondary mb-0 small">Comprehensive analysis of your emotional patterns</p>
+            </div>
+        </div>
+
+        <!-- Overall Mood Assessment -->
+        <div class="p-4 rounded-3 mb-4"
+            style="background: rgba(139,92,246,0.06); border: 1px solid rgba(139,92,246,0.15);">
+            <div class="d-flex align-items-center gap-3">
+                <span class="mood-indicator">{{ stats.mood_report.mood_emoji }}</span>
+                <div>
+                    <h5 class="fw-bold mb-1" style="color: var(--accent-purple);">Overall Assessment</h5>
+                    <p class="mb-0" style="font-size: 1.05rem; line-height: 1.6;">{{ stats.mood_report.overall_mood }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Zone Breakdown -->
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-bar-chart-steps" style="color: var(--accent-cyan);"></i>
+            Mood Zone Breakdown
+        </h5>
+        <div class="row g-3 mb-4">
+            {% for zone in stats.mood_report.zone_breakdown %}
+            <div class="col-md-6 col-lg-4">
+                <div class="p-3 rounded-3"
+                    style="background: rgba(22,22,58,0.5); border: 1px solid rgba(99,102,241,0.08);">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width: 12px; height: 12px; border-radius: 3px; background: {{ zone.color }};">
+                            </div>
+                            <span class="fw-semibold" style="font-size: 0.95rem;">{{ zone.label }}</span>
+                        </div>
+                        <span class="fw-bold"
+                            style="color: {{ zone.color }}; font-family: 'JetBrains Mono', monospace;">
+                            {{ zone.percentage }}%
+                        </span>
+                    </div>
+                    <div style="background: rgba(22,22,58,0.8); border-radius: 5px; height: 10px; overflow: hidden;">
+                        <div class="zone-bar" style="width: {{ zone.percentage }}%; background: {{ zone.color }};">
+                        </div>
+                    </div>
+                    <div class="text-secondary mt-1" style="font-size: 0.75rem;">{{ zone.count }} samples</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Personalized Recommendations -->
+        <h5 class="fw-bold mb-3">
+            <i class="bi bi-lightbulb" style="color: var(--accent-yellow);"></i>
+            Personalized Recommendations
+        </h5>
+        <div class="mb-2">
+            {% for rec in stats.mood_report.recommendations %}
+            <div class="report-rec">{{ rec }}</div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Session Info -->
+    <div class="glass-card text-center" id="session-info">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <small class="text-secondary">
+                    <i class="bi bi-clock"></i> Session Duration: <strong>{{ stats.session_duration }}</strong>
+                </small>
+            </div>
+            <div class="col-md-4">
+                <small class="text-secondary">
+                    <i class="bi bi-exclamation-triangle"></i> High Stress Time:
+                    <strong style="color: var(--accent-red);">{{ '%.1f' % stats.high_stress_pct }}%</strong>
+                </small>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('live') }}" class="btn btn-gradient btn-sm">
+                    <i class="bi bi-camera-video"></i> Start New Session
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

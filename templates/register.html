@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="glass-card">
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-plus-fill" style="font-size: 3rem; color: var(--accent-blue);"></i>
+                    <h2 class="section-title mt-3">Create Account</h2>
+                    <p class="text-secondary">Join StressAI to start monitoring your stress levels</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('register') }}" id="registerForm">
+                    <div class="mb-3">
+                        <label class="form-label" for="name">Full Name</label>
+                        <input type="text" class="form-control form-control-glass" id="name"
+                               name="name" value="{{ name if name else '' }}" placeholder="Enter your full name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="email">Email Address</label>
+                        <input type="email" class="form-control form-control-glass" id="email"
+                               name="email" value="{{ email if email else '' }}" placeholder="you@example.com" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="mobile">Mobile Number</label>
+                        <input type="tel" class="form-control form-control-glass" id="mobile"
+                               name="mobile" value="{{ mobile if mobile else '' }}" placeholder="10+ digit mobile number" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label" for="password">Password</label>
+                        <input type="password" class="form-control form-control-glass" id="password"
+                               name="password" placeholder="Min 8 chars, 1 upper, 1 lower, 1 digit" required>
+                        <div class="form-text text-secondary mt-2" style="font-size: 0.8rem;">
+                            <div id="pw-length" class="text-danger"><i class="bi bi-x-circle"></i> At least 8 characters</div>
+                            <div id="pw-upper" class="text-danger"><i class="bi bi-x-circle"></i> At least 1 uppercase letter</div>
+                            <div id="pw-lower" class="text-danger"><i class="bi bi-x-circle"></i> At least 1 lowercase letter</div>
+                            <div id="pw-digit" class="text-danger"><i class="bi bi-x-circle"></i> At least 1 digit</div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-gradient w-100 mt-3" id="submitBtn">
+                        <i class="bi bi-person-plus"></i> Create Account
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <span class="text-secondary">Already have an account?</span>
+                    <a href="{{ url_for('login') }}" class="text-decoration-none" style="color: var(--accent-blue);">
+                        Log in here
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const pw = document.getElementById('password');
+    pw.addEventListener('input', () => {
+        const v = pw.value;
+        toggle('pw-length', v.length >= 8);
+        toggle('pw-upper', /[A-Z]/.test(v));
+        toggle('pw-lower', /[a-z]/.test(v));
+        toggle('pw-digit', /\d/.test(v));
+    });
+
+    function toggle(id, ok) {
+        const el = document.getElementById(id);
+        el.className = ok ? 'text-success' : 'text-danger';
+        el.innerHTML = (ok ? '<i class="bi bi-check-circle-fill"></i> ' : '<i class="bi bi-x-circle"></i> ') + el.textContent.trim();
+    }
+</script>
+{% endblock %}

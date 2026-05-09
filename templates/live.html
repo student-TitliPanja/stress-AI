@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+{% block title %}Live Analysis{% endblock %}
+
+{% block extra_css %}
+<style>
+    .live-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+    }
+    @media (max-width: 992px) {
+        .live-grid { grid-template-columns: 1fr; }
+    }
+    .va-dot {
+        width: 16px; height: 16px;
+        border-radius: 50%;
+        background: var(--accent-pink);
+        position: absolute;
+        transition: all 0.5s ease;
+        box-shadow: 0 0 15px var(--accent-pink);
+    }
+    .va-space {
+        position: relative;
+        width: 100%;
+        padding-bottom: 100%;
+        background: rgba(22,22,58,0.6);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .stress-bar {
+        height: 12px;
+        border-radius: 6px;
+        background: rgba(22,22,58,0.6);
+        overflow: hidden;
+    }
+    .stress-fill {
+        height: 100%;
+        border-radius: 6px;
+        transition: width 0.5s ease, background 0.5s ease;
+    }
+    .rec-card {
+        padding: 0.8rem 1rem;
+        border-radius: 10px;
+        background: rgba(22,22,58,0.4);
+        border-left: 3px solid var(--accent-purple);
+        margin-bottom: 0.5rem;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+    }
+    .rec-card:hover {
+        background: rgba(99,102,241,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4 px-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="section-title mb-0">
+                <span class="pulse-dot me-2" id="liveDot"></span>
+                Live Analysis
+            </h1>
+            <p class="text-secondary mb-0">Real-time dual-stream stress detection</p>
+        </div>
+        <div>
+            {% if not calibrated %}
+            <a href="{{ url_for('calibrate') }}" class="btn btn-outline-glass btn-sm me-2">
+                <i class="bi bi-sliders"></i> Calibrate First
+            </a>
+            {% endif %}
+            <button onclick="toggleAnalysis()" class="btn btn-gradient" id="toggleBtn">
+                <i class="bi bi-play-fill"></i> Start Analysis
+            </button>
+        </div>
+    </div>
+
+    <div class="live-grid">
+        <!-- Left Column: Video + Audio -->
+        <div>
+            <!-- Video Feed -->
+            <div class="glass-card mb-4" id="videoPanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-camera-video" style="color: var(--accent-blue);"></i> Facial AU Stream</h5>
+                    <span class="badge" style="background: rgba(99,102,241,0.2); color: var(--accent-blue);">
+                        <i class="bi bi-eye"></i> 17 AUs
+                    </span>
+                </div>
+                <div class="rounded-3 overflow-hidden" style="border: 1px solid var(--border-color); aspect-ratio: 16/9; background: #000;">
+                    <img id="videoFeed" src="" alt="Video feed"
+                         style="width: 100%; height: 100%; object-fit: cover; display: none;">
+                    <div id="videoPlaceholder" class="d-flex align-items-center justify-content-center h-100">
+                        <div class="text-center text-secondary">
+                            <i class="bi bi-camera-video-off" style="font-size: 3rem;"></i>
+                            <p class="mt-2">Click "Start Analysis" to begin</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Acoustic Features -->
+            <div class="glass-card" id="audioPanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-soundwave" style="color: var(--accent-cyan);"></i> Speech Features</h5>
+                    <span class="badge" style="background: rgba(34,211,238,0.2); color: var(--accent-cyan);">
+                        <i class="bi bi-mic"></i> 84 dims
+                    </span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-3">
+                        <div class="text-center p-2 rounded-3" style="background: rgba(34,211,238,0.05);">
+                            <div class="fw-bold" style="font-family: 'JetBrains Mono'; color: var(--accent-cyan);" id="pitch">—</div>
+                            <div class="small text-secondary">Pitch (Hz)</div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="text-center p-2 rounded-3" style="background: rgba(249,115,22,0.05);">
+                            <div class="fw-bold" style="font-family: 'JetBrains Mono'; color: var(--accent-orange);" id="jitter">—</div>
+                            <div class="small text-secondary">Jitter</div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="text-center p-2 rounded-3" style="background: rgba(168,85,247,0.05);">
+                            <div class="fw-bold" style="font-family: 'JetBrains Mono'; color: var(--accent-purple);" id="shimmer">—</div>
+                            <div class="small text-secondary">Shimmer</div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="text-center p-2 rounded-3" style="background: rgba(34,197,94,0.05);">
+                            <div class="fw-bold" style="font-family: 'JetBrains Mono'; color: var(--accent-green);" id="rms">—</div>
+                            <div class="small text-secondary">RMS Energy</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Metrics -->
+        <div>
+            <!-- Stress Score -->
+            <div class="glass-card mb-4" id="stressPanel">
+                <h5 class="mb-3 fw-bold"><i class="bi bi-activity" style="color: var(--accent-red);"></i> Stress Level</h5>
+                <div class="text-center mb-3">
+                    <div style="font-size: 3.5rem; font-weight: 800; font-family: 'JetBrains Mono';" id="stressValue" class="gradient-text">
+                        —
+                    </div>
+                    <div class="stress-bar mt-2">
+                        <div class="stress-fill" id="stressBar" style="width: 0%; background: var(--accent-green);"></div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <span class="badge-zone" id="zoneBadge" style="font-size: 1rem;">—</span>
+                </div>
+            </div>
+
+            <!-- V-A Space -->
+            <div class="glass-card mb-4" id="vaPanel">
+                <h5 class="mb-3 fw-bold"><i class="bi bi-bullseye" style="color: var(--accent-pink);"></i> V-A Space</h5>
+                <div class="va-space" id="vaSpace">
+                    <!-- Quadrant labels -->
+                    <div style="position: absolute; top: 10%; left: 10%; font-size: 0.7rem; color: var(--accent-red); font-weight: 700; opacity: 0.5;">STRESS</div>
+                    <div style="position: absolute; top: 10%; right: 10%; font-size: 0.7rem; color: var(--accent-green); font-weight: 700; opacity: 0.5;">JOY</div>
+                    <div style="position: absolute; bottom: 10%; left: 10%; font-size: 0.7rem; color: var(--accent-blue); font-weight: 700; opacity: 0.5;">SAD</div>
+                    <div style="position: absolute; bottom: 10%; right: 10%; font-size: 0.7rem; color: var(--accent-cyan); font-weight: 700; opacity: 0.5;">CALM</div>
+                    <!-- Axes -->
+                    <div style="position: absolute; top: 50%; left: 5%; right: 5%; height: 1px; background: rgba(255,255,255,0.1);"></div>
+                    <div style="position: absolute; left: 50%; top: 5%; bottom: 5%; width: 1px; background: rgba(255,255,255,0.1);"></div>
+                    <!-- Dot -->
+                    <div class="va-dot" id="vaDot" style="left: 50%; top: 50%; transform: translate(-50%, -50%);"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2 small text-secondary">
+                    <span>V: <span id="valenceVal" style="color: var(--accent-blue); font-family: 'JetBrains Mono';">0.00</span></span>
+                    <span>A: <span id="arousalVal" style="color: var(--accent-pink); font-family: 'JetBrains Mono';">0.00</span></span>
+                </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="glass-card" id="recsPanel">
+                <h5 class="mb-3 fw-bold"><i class="bi bi-lightbulb" style="color: var(--accent-yellow);"></i> Recommendations</h5>
+                <div id="recommendations">
+                    <p class="text-secondary small">Start analysis to receive personalized recommendations.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let isRunning = false;
+let pollInterval = null;
+let audioSource = null;
+
+function toggleAnalysis() {
+    if (isRunning) {
+        stopAnalysis();
+    } else {
+        startAnalysis();
+    }
+}
+
+function startAnalysis() {
+    isRunning = true;
+    const btn = document.getElementById('toggleBtn');
+    btn.innerHTML = '<i class="bi bi-stop-fill"></i> Stop Analysis';
+    btn.classList.remove('btn-gradient');
+    btn.classList.add('btn-danger');
+
+    document.getElementById('liveDot').className = 'pulse-dot me-2';
+
+    // Start video feed
+    const videoFeed = document.getElementById('videoFeed');
+    videoFeed.src = '/video_feed?' + Date.now();
+    videoFeed.style.display = 'block';
+    document.getElementById('videoPlaceholder').style.display = 'none';
+
+    // Start audio SSE
+    audioSource = new EventSource('/audio_feed');
+    audioSource.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        document.getElementById('pitch').textContent = data.pitch.toFixed(1);
+        document.getElementById('jitter').textContent = data.jitter.toFixed(4);
+        document.getElementById('shimmer').textContent = data.shimmer.toFixed(4);
+        document.getElementById('rms').textContent = data.rms.toFixed(3);
+    };
+
+    // Poll for stress data
+    pollInterval = setInterval(fetchLiveData, 2000);
+    fetchLiveData();
+}
+
+function stopAnalysis() {
+    isRunning = false;
+    const btn = document.getElementById('toggleBtn');
+    btn.innerHTML = '<i class="bi bi-play-fill"></i> Start Analysis';
+    btn.classList.remove('btn-danger');
+    btn.classList.add('btn-gradient');
+
+    document.getElementById('liveDot').className = 'pulse-dot me-2';
+    document.getElementById('liveDot').style.background = 'var(--accent-green)';
+
+    document.getElementById('videoFeed').style.display = 'none';
+    document.getElementById('videoPlaceholder').style.display = 'flex';
+
+    if (audioSource) audioSource.close();
+    if (pollInterval) clearInterval(pollInterval);
+}
+
+async function fetchLiveData() {
+    try {
+        const resp = await fetch('/live_data');
+        const data = await resp.json();
+        updateUI(data);
+    } catch(e) {
+        console.error('Fetch error:', e);
+    }
+}
+
+function updateUI(data) {
+    // Stress value
+    const stress = data.stress_score;
+    document.getElementById('stressValue').textContent = stress.toFixed(2);
+
+    // Stress bar
+    const bar = document.getElementById('stressBar');
+    bar.style.width = (stress * 100) + '%';
+    bar.style.background = stress > 0.7 ? 'var(--accent-red)' :
+                           stress > 0.4 ? 'var(--accent-orange)' : 'var(--accent-green)';
+
+    // Zone badge
+    const zone = data.zone;
+    const zoneBadge = document.getElementById('zoneBadge');
+    zoneBadge.textContent = zone.replace('_', ' ').toUpperCase();
+    zoneBadge.className = 'badge-zone badge-' + zone;
+
+    // V-A dot
+    const vx = ((data.valence + 1) / 2) * 100;
+    const vy = ((1 - data.arousal) / 2) * 100;
+    const dot = document.getElementById('vaDot');
+    dot.style.left = vx + '%';
+    dot.style.top = vy + '%';
+
+    // Zone-based dot color
+    const dotColors = {
+        high_stress: '#ef4444', anxiety: '#f97316', anger: '#dc2626',
+        sadness: '#6366f1', joy: '#22c55e', calm: '#3b82f6', neutral: '#9ca3af'
+    };
+    dot.style.background = dotColors[zone] || '#ec4899';
+    dot.style.boxShadow = `0 0 15px ${dotColors[zone] || '#ec4899'}`;
+
+    document.getElementById('valenceVal').textContent = data.valence.toFixed(2);
+    document.getElementById('arousalVal').textContent = data.arousal.toFixed(2);
+
+    // Recommendations
+    const recsDiv = document.getElementById('recommendations');
+    if (data.recommendations && data.recommendations.length > 0) {
+        recsDiv.innerHTML = data.recommendations
+            .map(r => `<div class="rec-card"><i class="bi bi-arrow-right-circle" style="color: var(--accent-purple);"></i> ${r}</div>`)
+            .join('');
+    }
+}
+</script>
+{% endblock %}

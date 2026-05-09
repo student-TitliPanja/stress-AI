@@ -1,0 +1,36 @@
+.vercel
+
+# Python / virtualenv
+__pycache__/
+*.py[cod]
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environments
+.venv/
+venv/
+ENV/
+.env
+.env.*
+
+# Notebooks
+.ipynb_checkpoints/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# App runtime uploads (keep bundled samples)
+static/uploads/
+!static/uploads/samples/
+!static/uploads/samples/**
+
+# Local user database (contains PII)
+users.json
+
+# Large model artifacts (uncomment if you don't want to push them)
+# *.h5
+# *.keras

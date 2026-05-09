@@ -1,0 +1,36 @@
+﻿≡ƒôè Generating synthetic training data...
+============================================================
+  MODEL ACCURACY IN PERCENTAGE
+============================================================
+  Within +/-0.1 :  Valence 14.2%  |  Arousal 14.9%  |  Avg 14.5%
+  Within +/-0.2 :  Valence 30.4%  |  Arousal 27.4%  |  Avg 28.9%
+  Within +/-0.3 :  Valence 41.9%  |  Arousal 41.0%  |  Avg 41.5%
+  Within +/-0.5 :  Valence 62.7%  |  Arousal 63.7%  |  Avg 63.2%
+
+  Normalized Accuracy:
+    Valence : 79.1%
+    Arousal : 78.8%
+    Average : 78.9%
+
+  Zone Classification Accuracy: 43.6%
+  Zone-wise Breakdown:
+    anxiety        : 0/22 correct = 0.0%
+    calm           : 168/274 correct = 61.3%
+    high_stress    : 148/148 correct = 100.0%
+    joy            : 0/113 correct = 0.0%
+    neutral        : 120/268 correct = 44.8%
+    sadness        : 0/175 correct = 0.0%
+
+  Variance Explained:
+    Valence : 18.7%
+    Arousal : 21.3%
+    Average : 20.0%
+
+============================================================
+  SUMMARY
+============================================================
+  Prediction within +/-0.2  : 28.9%
+  Normalized Accuracy       : 78.9%
+  Zone Classification       : 43.6%
+  Variance Explained        : 20.0%
+============================================================

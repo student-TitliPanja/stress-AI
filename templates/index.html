@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <div class="mb-4">
+            <span style="font-size: 4rem;">🧠</span>
+        </div>
+        <h1 class="section-title" style="font-size: 3rem;">
+            Real-Time <span class="gradient-text">Stress Detection</span>
+            <br>& Analysis System
+        </h1>
+        <p class="section-subtitle mx-auto mt-3" style="max-width: 700px; font-size: 1.15rem;">
+            AI-powered multimodal stress monitoring using Facial Action Units & Speech Recognition
+            with Cross-Modal Attention and continuous Valence-Arousal regression.
+        </p>
+        <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+            {% if session.get('user_id') %}
+            <a href="{{ url_for('live') }}" class="btn btn-gradient btn-lg">
+                <i class="bi bi-camera-video-fill"></i> Start Live Analysis
+            </a>
+            <a href="{{ url_for('analysis') }}" class="btn btn-outline-glass btn-lg">
+                <i class="bi bi-graph-up"></i> View Dashboard
+            </a>
+            {% else %}
+            <a href="{{ url_for('register') }}" class="btn btn-gradient btn-lg">
+                <i class="bi bi-rocket-takeoff"></i> Get Started
+            </a>
+            <a href="{{ url_for('login') }}" class="btn btn-outline-glass btn-lg">
+                <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Feature Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="glass-card h-100 text-center" id="feature-facial">
+                <div class="mb-3">
+                    <i class="bi bi-eye" style="font-size: 2.5rem; color: var(--accent-blue);"></i>
+                </div>
+                <h3 style="font-weight: 700; font-size: 1.2rem;">Facial Action Units</h3>
+                <p class="text-secondary mt-2" style="font-size: 0.9rem;">
+                    17 biomechanical AU intensities extracted via OpenFace 3.0 — objective muscle
+                    movement analysis, not subjective emotion labels.
+                </p>
+                <div class="mt-3">
+                    <span class="badge bg-primary bg-opacity-25 text-primary">AU04 Brow Furrow</span>
+                    <span class="badge bg-primary bg-opacity-25 text-primary">AU07 Eyelid</span>
+                    <span class="badge bg-primary bg-opacity-25 text-primary">AU09 Nose</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card h-100 text-center" id="feature-speech">
+                <div class="mb-3">
+                    <i class="bi bi-mic" style="font-size: 2.5rem; color: var(--accent-purple);"></i>
+                </div>
+                <h3 style="font-weight: 700; font-size: 1.2rem;">Speech Analysis</h3>
+                <p class="text-secondary mt-2" style="font-size: 0.9rem;">
+                    84-dimensional acoustic feature vector per 500ms chunk: Pitch, Jitter, Shimmer,
+                    40 MFCCs, 40 Delta MFCCs, and RMS Energy.
+                </p>
+                <div class="mt-3">
+                    <span class="badge bg-purple bg-opacity-25" style="background: rgba(139,92,246,0.2); color: #8b5cf6;">Pitch F0</span>
+                    <span class="badge" style="background: rgba(139,92,246,0.2); color: #8b5cf6;">MFCCs</span>
+                    <span class="badge" style="background: rgba(139,92,246,0.2); color: #8b5cf6;">Jitter</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card h-100 text-center" id="feature-fusion">
+                <div class="mb-3">
+                    <i class="bi bi-diagram-3" style="font-size: 2.5rem; color: var(--accent-pink);"></i>
+                </div>
+                <h3 style="font-weight: 700; font-size: 1.2rem;">Cross-Modal Fusion</h3>
+                <p class="text-secondary mt-2" style="font-size: 0.9rem;">
+                    State-of-the-art Multimodal Transformer where face attends to speech and
+                    vice versa. Output: continuous Valence-Arousal (V-A) regression.
+                </p>
+                <div class="mt-3">
+                    <span class="badge" style="background: rgba(236,72,153,0.2); color: #ec4899;">Attention</span>
+                    <span class="badge" style="background: rgba(236,72,153,0.2); color: #ec4899;">V-A Space</span>
+                    <span class="badge" style="background: rgba(236,72,153,0.2); color: #ec4899;">LSTM</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Innovation Highlights -->
+    <div class="row g-4 mb-5">
+        <div class="col-12">
+            <h2 class="section-title text-center mb-4">
+                <span class="gradient-text">5 Key Innovations</span>
+            </h2>
+        </div>
+        <div class="col-lg-6">
+            <div class="glass-card h-100" id="innovation-au">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge bg-primary rounded-pill me-3 px-3 py-2" style="font-size: 1rem;">1</span>
+                    <h4 class="mb-0" style="font-weight: 700;">Objective AU Detection</h4>
+                </div>
+                <p class="text-secondary">Replace subjective CNN emotion classifiers with biomechanical Facial Action Unit
+                analysis via OpenFace 3.0 — culture-independent, scientifically validated.</p>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="glass-card h-100" id="innovation-speech">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge rounded-pill me-3 px-3 py-2" style="font-size: 1rem; background: var(--accent-purple);">2</span>
+                    <h4 class="mb-0" style="font-weight: 700;">Full Speech Pipeline</h4>
+                </div>
+                <p class="text-secondary">Complete parallel audio modality: Pitch, Jitter, Shimmer, MFCCs, and
+                temporal dynamics through 1D-CNN + LSTM architecture.</p>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="glass-card h-100" id="innovation-va">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge rounded-pill me-3 px-3 py-2" style="font-size: 1rem; background: var(--accent-pink);">3</span>
+                    <h4 class="mb-0" style="font-weight: 700;">Continuous V-A Regression</h4>
+                </div>
+                <p class="text-secondary">No discrete emotion classes. Continuous 2D Valence-Arousal output
+                — the clinical gold standard for affective computing.</p>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="glass-card h-100" id="innovation-attention">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge rounded-pill me-3 px-3 py-2" style="font-size: 1rem; background: var(--accent-cyan);">4</span>
+                    <h4 class="mb-0" style="font-weight: 700;">Cross-Modal Attention</h4>
+                </div>
+                <p class="text-secondary">Multimodal Transformer fusion: face features attend to speech features
+                and vice versa — learns emergent cross-modal stress patterns.</p>
+            </div>
+        </div>
+        <div class="col-12">
+            <div class="glass-card" id="innovation-personal">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge rounded-pill me-3 px-3 py-2" style="font-size: 1rem; background: var(--accent-green);">5</span>
+                    <h4 class="mb-0" style="font-weight: 700;">Personalized Calibration + Federated Learning</h4>
+                </div>
+                <p class="text-secondary mb-0">90-second neutral baseline calibration per user. Stress detected as deviation from YOUR
+                personal neutral state. All biometric data processed locally via Federated Learning — privacy guaranteed.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Architecture Overview -->
+    <div class="glass-card text-center mb-5" id="architecture-overview">
+        <h2 class="section-title mb-4"><span class="gradient-text">System Architecture</span></h2>
+        <div class="row g-3 justify-content-center">
+            <div class="col-auto">
+                <div class="p-3 rounded-3" style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);">
+                    <i class="bi bi-camera-video" style="font-size: 1.5rem; color: var(--accent-blue);"></i>
+                    <div class="mt-1 small fw-bold">Webcam</div>
+                </div>
+            </div>
+            <div class="col-auto d-flex align-items-center">
+                <i class="bi bi-arrow-right" style="font-size: 1.5rem; color: var(--text-secondary);"></i>
+            </div>
+            <div class="col-auto">
+                <div class="p-3 rounded-3" style="background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);">
+                    <i class="bi bi-eye" style="font-size: 1.5rem; color: var(--accent-blue);"></i>
+                    <div class="mt-1 small fw-bold">OpenFace AU</div>
+                </div>
+            </div>
+            <div class="col-auto d-flex align-items-center">
+                <i class="bi bi-arrow-right" style="font-size: 1.5rem; color: var(--text-secondary);"></i>
+            </div>
+            <div class="col-auto">
+                <div class="p-3 rounded-3" style="background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2);">
+                    <i class="bi bi-cpu" style="font-size: 1.5rem; color: var(--accent-purple);"></i>
+                    <div class="mt-1 small fw-bold">LSTM + Attention</div>
+                </div>
+            </div>
+            <div class="col-auto d-flex align-items-center">
+                <i class="bi bi-arrow-right" style="font-size: 1.5rem; color: var(--text-secondary);"></i>
+            </div>
+            <div class="col-auto">
+                <div class="p-3 rounded-3" style="background: rgba(236,72,153,0.1); border: 1px solid rgba(236,72,153,0.2);">
+                    <i class="bi bi-graph-up" style="font-size: 1.5rem; color: var(--accent-pink);"></i>
+                    <div class="mt-1 small fw-bold">V-A Output</div>
+                </div>
+            </div>
+        </div>
+        <div class="row g-3 justify-content-center mt-2">
+            <div class="col-auto">
+                <div class="p-3 rounded-3" style="background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.2);">
+                    <i class="bi bi-mic" style="font-size: 1.5rem; color: var(--accent-cyan);"></i>
+                    <div class="mt-1 small fw-bold">Microphone</div>
+                </div>
+            </div>
+            <div class="col-auto d-flex align-items-center">
+                <i class="bi bi-arrow-right" style="font-size: 1.5rem; color: var(--text-secondary);"></i>
+            </div>
+            <div class="col-auto">
+                <div class="p-3 rounded-3" style="background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.2);">
+                    <i class="bi bi-soundwave" style="font-size: 1.5rem; color: var(--accent-cyan);"></i>
+                    <div class="mt-1 small fw-bold">Acoustic Features</div>
+                </div>
+            </div>
+            <div class="col-auto d-flex align-items-center">
+                <i class="bi bi-arrow-right" style="font-size: 1.5rem; color: var(--text-secondary);"></i>
+            </div>
+            <div class="col-auto">
+                <div class="p-3 rounded-3" style="background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2);">
+                    <i class="bi bi-cpu" style="font-size: 1.5rem; color: var(--accent-purple);"></i>
+                    <div class="mt-1 small fw-bold">CNN + LSTM</div>
+                </div>
+            </div>
+            <div class="col-auto d-flex align-items-center">
+                <i class="bi bi-arrow-up-right" style="font-size: 1.5rem; color: var(--text-secondary);"></i>
+            </div>
+            <div class="col-auto">
+                <div class="p-3 rounded-3" style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2);">
+                    <i class="bi bi-shield-check" style="font-size: 1.5rem; color: var(--accent-green);"></i>
+                    <div class="mt-1 small fw-bold">Local Only</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tech Stack -->
+    <div class="glass-card mb-5" id="tech-stack">
+        <h2 class="section-title text-center mb-4"><span class="gradient-text">Technology Stack</span></h2>
+        <div class="row g-3 justify-content-center">
+            {% set techs = [
+                ('Python 3.10+', 'bi-filetype-py', '--accent-blue'),
+                ('TensorFlow 2.x', 'bi-cpu', '--accent-orange'),
+                ('OpenCV', 'bi-camera', '--accent-green'),
+                ('OpenFace 3.0', 'bi-eye', '--accent-cyan'),
+                ('librosa', 'bi-music-note', '--accent-purple'),
+                ('Flask', 'bi-globe', '--accent-pink'),
+                ('Bootstrap 5', 'bi-bootstrap', '--accent-blue'),
+                ('Flower FL', 'bi-shield-lock', '--accent-green'),
+            ] %}
+            {% for name, icon, color in techs %}
+            <div class="col-6 col-md-3">
+                <div class="text-center p-3 rounded-3" style="background: rgba(22,22,58,0.5);">
+                    <i class="bi {{ icon }}" style="font-size: 1.8rem; color: var({{ color }});"></i>
+                    <div class="mt-2 small fw-bold">{{ name }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
