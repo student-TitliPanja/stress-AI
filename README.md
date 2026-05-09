@@ -1,26 +1,3 @@
-# 🧠 Real-Time Stress Detection & Analysis System
-
-**Multimodal AI-powered stress monitoring using Facial Action Units & Speech Recognition**
-
-> Prepared by: **Titli Panja** (12024052020052) & **Soumya Ranjan Pradhan** (12024052020051)  
-> Institute of Engineering & Management | B.Tech CSE(AI) — 2nd Year, 3rd Semester  
-> Supervisor: **Dr. Moutushi Biswas Singh**
-
----
-
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [Key Innovations](#key-innovations)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Setup & Installation](#setup--installation)
-- [Running the Application](#running-the-application)
-- [Usage Guide](#usage-guide)
-- [Dashboard Views](#dashboard-views)
-- [Federated Learning](#federated-learning)
-- [Datasets](#datasets)
-- [References](#references)
 
 ---
 
